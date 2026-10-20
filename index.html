@@ -1,0 +1,975 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+html, body {
+  margin: 0;
+  padding: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: "Trebuchet MS", Arial, sans-serif;
+}
+
+body {
+  background-image: url("https://i.postimg.cc/bJJP39HJ/vvvv.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-color: #21163f;
+}
+
+/* GAME TITLE */
+
+.game-title {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 40;
+  text-align: center;
+  width: 90%;
+  color: #ffcf40;
+  font-size: clamp(22px, 3vw, 38px);
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-shadow:
+    3px 3px 0 #542b88,
+    -2px -2px 0 #542b88,
+    2px -2px 0 #542b88,
+    -2px 2px 0 #542b88,
+    0 5px 12px #000;
+  pointer-events: none;
+}
+
+.subtitle {
+  display: block;
+  margin-top: 5px;
+  font-size: clamp(11px, 1.5vw, 16px);
+  letter-spacing: 1px;
+  color: white;
+}
+
+/* SCORE */
+
+.score {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 50;
+  padding: 12px 18px;
+  border: 3px solid #ffcf40;
+  border-radius: 14px;
+  background: rgba(35, 20, 65, 0.9);
+  color: #fff;
+  font-size: 20px;
+  font-weight: bold;
+  box-shadow: 0 4px 12px #0005;
+}
+
+.progress {
+  position: absolute;
+  top: 82px;
+  left: 18px;
+  z-index: 40;
+  padding: 8px 12px;
+  border-radius: 10px;
+  color: white;
+  background: rgba(35, 20, 65, 0.8);
+  font-weight: bold;
+}
+
+/* FLYING GHOSTS */
+
+.item {
+  position: absolute;
+  width: clamp(85px, 12vw, 145px);
+  height: clamp(85px, 12vw, 145px);
+  background-image: url("https://i.postimg.cc/R0v4nB3r/Ghost-Download-Transparent-PNG-Image.png");
+  background-size: contain;
+  background-repeat: no-repeat;
+  background-position: center;
+  cursor: pointer;
+  z-index: 5;
+  filter: drop-shadow(0 0 9px rgba(200, 240, 255, 0.9));
+  transition: filter 0.2s, transform 0.2s;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.item:hover {
+  filter: drop-shadow(0 0 18px #a9ffed);
+  transform: scale(1.12);
+}
+
+.item.flipped {
+  transform: scaleX(-1);
+}
+
+.item.flipped:hover {
+  transform: scaleX(-1) scale(1.12);
+}
+
+.item.caught {
+  opacity: 0.5;
+  filter: grayscale(1);
+  cursor: default;
+}
+
+/* INSTRUCTIONS */
+
+.instructions {
+  position: absolute;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  z-index: 30;
+  width: max-content;
+  max-width: 90%;
+  padding: 12px 20px;
+  border: 2px solid #ffcf40;
+  border-radius: 14px;
+  background: rgba(35, 20, 65, 0.88);
+  color: white;
+  text-align: center;
+  font-size: 15px;
+  font-weight: bold;
+  pointer-events: none;
+}
+
+/* QUESTION WINDOW */
+
+.question-box {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  width: 86%;
+  max-width: 540px;
+  max-height: 85vh;
+  overflow-y: auto;
+  padding: 25px;
+  border: 4px solid #ffcf40;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.96);
+  box-shadow: 0 0 0 6px rgba(75, 42, 120, 0.85),
+              0 10px 35px #0008;
+  display: none;
+  z-index: 100;
+  text-align: center;
+}
+
+.question-box h2 {
+  margin: 0 0 8px;
+  color: #542b88;
+  font-size: 27px;
+}
+
+.question-box .case-note {
+  margin: 0 0 20px;
+  color: #555;
+  font-size: 14px;
+}
+
+#questionText {
+  font-size: 20px;
+  line-height: 1.6;
+  font-weight: bold;
+  color: #241b35;
+  margin: 0 0 20px;
+}
+
+.verb-hint {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 5px 12px;
+  border-radius: 8px;
+  background: #eee5ff;
+  color: #542b88;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* ANSWER INPUT */
+
+#answerInput {
+  width: 100%;
+  padding: 13px;
+  border: 2px solid #8b70b6;
+  border-radius: 10px;
+  outline: none;
+  background: white;
+  color: #241b35;
+  font-size: 18px;
+  text-align: center;
+}
+
+#answerInput:focus {
+  border-color: #542b88;
+  box-shadow: 0 0 8px #8b70b688;
+}
+
+/* BUTTONS */
+
+button {
+  font-family: inherit;
+  font-weight: bold;
+  border: none;
+  border-radius: 10px;
+  padding: 12px 22px;
+  font-size: 17px;
+  cursor: pointer;
+  transition: transform 0.15s, filter 0.15s;
+}
+
+button:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+#checkBtn {
+  margin-top: 14px;
+  background: #542b88;
+  color: white;
+}
+
+#nextBtn {
+  margin-top: 14px;
+  background: #26865b;
+  color: white;
+  display: none;
+}
+
+#closeBtn {
+  margin-top: 14px;
+  margin-left: 6px;
+  background: #e8e2ef;
+  color: #542b88;
+}
+
+#result {
+  min-height: 25px;
+  margin-top: 14px;
+  font-size: 17px;
+  font-weight: bold;
+  line-height: 1.5;
+}
+
+.correct {
+  color: #18834e;
+}
+
+.incorrect {
+  color: #c73535;
+}
+
+/* FINAL WINDOW */
+
+.final-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 85%;
+  max-width: 450px;
+  padding: 30px;
+  border: 4px solid #ffcf40;
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.97);
+  box-shadow: 0 0 0 6px #542b88, 0 10px 35px #0008;
+  display: none;
+  z-index: 200;
+  text-align: center;
+}
+
+.final-message h2 {
+  color: #542b88;
+  font-size: 32px;
+  margin: 0 0 12px;
+}
+
+.final-message p {
+  font-size: 19px;
+  line-height: 1.6;
+}
+
+.play-again-btn {
+  margin-top: 10px;
+  background: #542b88;
+  color: white;
+}
+
+@media (max-width: 600px) {
+  .game-title {
+    top: 15px;
+    left: auto;
+    right: 12px;
+    transform: none;
+    width: 58%;
+    font-size: 20px;
+    letter-spacing: 0;
+  }
+
+  .subtitle {
+    font-size: 11px;
+  }
+
+  .score {
+    top: 15px;
+    left: 10px;
+    padding: 9px 12px;
+    font-size: 16px;
+  }
+
+  .progress {
+    top: 65px;
+    left: 10px;
+    font-size: 13px;
+  }
+
+  .question-box {
+    width: 90%;
+    padding: 20px 16px;
+  }
+
+  .question-box h2 {
+    font-size: 23px;
+  }
+
+  #questionText {
+    font-size: 18px;
+  }
+
+  .instructions {
+    bottom: 10px;
+    font-size: 12px;
+    padding: 10px 12px;
+  }
+}
+/* MISTAKES REVIEW */
+
+#mistakesReview {
+  margin-top: 20px;
+  text-align: left;
+  max-height: 40vh;
+  overflow-y: auto;
+}
+
+.mistake-card {
+  padding: 12px;
+  margin-bottom: 12px;
+  border-left: 5px solid #c73535;
+  border-radius: 8px;
+  background: #fff0f0;
+  overflow-wrap: anywhere;
+}
+
+.mistake-card .mistake-question {
+  color: #241b35;
+  font-weight: bold;
+  line-height: 1.5;
+}
+
+.mistake-card .your-answer {
+  margin-top: 8px;
+  color: #c73535;
+}
+
+.mistake-card .correct-answer {
+  margin-top: 5px;
+  color: #18834e;
+  font-weight: bold;
+}
+
+.no-mistakes {
+  padding: 14px;
+  border-radius: 10px;
+  background: #e6f6ec;
+  color: #18834e;
+  text-align: center;
+  font-weight: bold;
+}
+</style>
+</head>
+
+<body>
+
+
+<div class="score" id="score">⭐ Score: 0</div>
+<div class="progress" id="progress">Ghosts caught: 0 / 16</div>
+
+<div class="instructions" id="instructions">
+  👻 Catch all ghosts to solve a mystery!
+</div>
+
+<!-- QUESTION WINDOW -->
+
+<div class="question-box" id="questionBox">
+  <h2>🔎 Mystery Question</h2>
+  <p class="case-note">Help Mystery Inc. find the correct tense!</p>
+
+  <p id="questionText"></p>
+
+  <input
+    type="text"
+    id="answerInput"
+    placeholder="Type the correct verb form..."
+    autocomplete="off"
+    spellcheck="false"
+  >
+
+  <div>
+    <button id="checkBtn">Check ✓</button>
+    <button id="nextBtn">Next ghost →</button>
+    <button id="closeBtn">Close ✕</button>
+  </div>
+
+  <div id="result" aria-live="polite"></div>
+</div>
+
+<!-- FINAL WINDOW -->
+
+<div class="final-message" id="finalMessage">
+  <h2 id="finalTitle">Mystery solved! 🎉</h2>
+  <p id="finalScore"></p>
+  <p id="finalMessageText"></p>
+<div id="mistakesReview"></div>
+  <button class="play-again-btn" id="playAgainBtn">
+    Play Again! 👻
+  </button>
+</div>
+
+<script>
+/* =====================================
+   QUESTIONS: FOUR TENSES
+===================================== */
+
+const questions = [
+  {
+    sentence: "The team __________ the ghost's costume yet, so they are still looking for clues.",
+    verb: "(not / find)",
+    answers: ["hasn't found"],
+hint: "Look at 'yet'. Use Present Perfect."
+  },
+  {
+    sentence: "What __________ while the others were setting the trap?",
+    verb: "(Shaggy / do)",
+    answers: ["was Shaggy doing"],
+ hint:  "Look at 'while'. Use Past Continuous to ask about an action in progress."
+  },
+  {
+    sentence: "Velma didn't look for the diary in the library because she _________ it was in the basement.",
+    verb: "(think)",
+    answers: ["thought"],
+  hint: "Use Past Simple to describe a past belief. The past form of 'think' is irregular."
+
+  },
+  {
+    sentence: "Shaggy is exhausted because he _____ from the ghost for an hour.",
+    verb: "(run)",
+    answers: ["has been running"],
+hint: "Look at 'for an hour' and the result in the present ('is exhausted'). Use Present Perfect Continuous."
+  },
+  {
+    sentence: "Shaggy didn't bring his flashlight, so he __________ anything.",
+    verb: "(not / can / see)",
+    answers: ["couldn't see"],
+ hint: "The sentence describes an inability in the past. Use 'couldn't' + the base form of the verb."
+  },
+  {
+    sentence: "Shaggy and Scooby __________  well for several nights because they keep hearing strange sounds.",
+    verb: "(not / sleep)",
+    answers: ["haven't been sleeping"],
+hint: "Look at 'for several nights' and the continuing situation. Use Present Perfect Continuous."
+  },
+  {
+    sentence: "What __________ when the lights suddenly went out?",
+    verb: "(Velma / read)",
+    answers: ["was Velma reading"],
+hint: "The lights went out during an action in progress. Use Past Continuous to ask what was happening at that moment."
+  },
+  {
+    sentence: "The wind __________ through the broken windows while the team was exploring the hotel.",
+    verb: "(blow)",
+    answers: ["was blowing"],
+  hint: "Look at 'while'. Use Past Continuous for an action in progress at the same time as another past action."
+  },
+  {
+    sentence: "The ghost _____ through the wall and disappeared.",
+    verb: "(go)",
+    answers: ["went"],
+ hint: "The ghost completed two actions in the past. Use Past Simple; 'go' is irregular."
+  },
+  {
+    sentence: "Scooby __________ the old vase, and now Velma is trying to hide the mess.",
+    verb: "(break)",
+    answers: ["has broken"],
+  hint: "The past action has a result now. Use Present Perfect."
+  },
+  {
+    sentence: "The ghost __________ people for weeks, and nobody wants to leave home after dark.",
+    verb: "(frighten)",
+    answers: ["has been frightening"],
+hint: "Look at 'for weeks'. The action has continued over time and affects the present. Use Present Perfect Continuous."
+  },
+  {
+    sentence: "A mysterious man __________ the hotel before the police arrived.",
+    verb: "(leave)",
+    answers: ["left"],
+  hint: "The man left in the past before another past event. Use Past Simple; 'leave' is irregular."
+  },
+  {
+    sentence: "Velma __________ a secret door, so the team can enter the hidden room now.",
+    verb: "(discover)",
+    answers: ["has discovered"],
+  hint: "The discovery happened in the past, but its result matters now: the team can enter the room. Use Present Perfect."
+  },
+  {
+    sentence: "Shaggy __________ when Velma explained the plan.",
+    verb: "(not / listen)",
+    answers: ["wasn't listening"],
+hint: "Velma's explanation happened while Shaggy was not paying attention. Use Past Continuous."
+  },
+  {
+    sentence: "The team __________ the monster yesterday.",
+    verb: "(not / catch) ",
+    answers: ["didn't catch"],
+  hint: "Look at 'yesterday'. Use Past Simple in the negative."
+  },
+  {
+    sentence: "Scooby and Shaggy _____ behind the chest since sunset.",
+    verb: "(hide)",
+    answers: ["have been hiding"],
+hint: "Look at 'since sunset'. The hiding started in the past and is still continuing. Use Present Perfect Continuous."
+  }
+];
+
+/* =====================================
+   GAME VARIABLES
+===================================== */
+
+let score = 0;
+let ghosts = [];
+let currentGhost = null;
+let currentQuestion = null;
+let caughtCount = 0;
+let answered = false;
+let gameId = 0;
+
+const $ = id => document.getElementById(id);
+
+/* =====================================
+   SHUFFLE QUESTIONS
+===================================== */
+
+function shuffle(array) {
+  const result = [...array];
+
+  for (let i = result.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [result[i], result[j]] = [result[j], result[i]];
+  }
+
+  return result;
+}
+
+/* =====================================
+   CREATE A FLYING GHOST
+===================================== */
+
+function createGhost(question, index, session) {
+  const ghost = document.createElement("div");
+  ghost.className = "item";
+  ghost.setAttribute("role", "button");
+  ghost.setAttribute("aria-label", "Catch a ghost");
+  ghost.tabIndex = 0;
+
+  const size = Math.min(
+    Math.max(window.innerWidth * 0.12, 85),
+    145
+  );
+
+  let x = Math.random() * Math.max(1, window.innerWidth - size);
+  let y = Math.random() * Math.max(1, window.innerHeight - size);
+
+  let dx = (0.6 + Math.random() * 1.1) *
+    (Math.random() < 0.5 ? -1 : 1);
+
+  let dy = (0.4 + Math.random() * 0.9) *
+    (Math.random() < 0.5 ? -1 : 1);
+
+  ghost.style.left = x + "px";
+  ghost.style.top = y + "px";
+
+  function catchGhost() {
+    if (
+      session !== gameId ||
+      ghost.classList.contains("caught") ||
+      answered
+    ) {
+      return;
+    }
+
+    currentGhost = ghost;
+    currentQuestion = question;
+    answered = false;
+
+    ghost.classList.add("caught");
+    ghost.style.pointerEvents = "none";
+
+    $("questionText").innerHTML =
+      escapeHTML(question.sentence) +
+      '<br><span class="verb-hint">' +
+      escapeHTML(question.verb) +
+      "</span>";
+
+    $("answerInput").value = "";
+    $("answerInput").disabled = false;
+    $("result").textContent = "";
+    $("result").className = "";
+
+    $("checkBtn").style.display = "inline-block";
+    $("nextBtn").style.display = "none";
+    $("closeBtn").style.display = "inline-block";
+    $("questionBox").style.display = "block";
+    $("instructions").style.display = "none";
+
+    setTimeout(() => $("answerInput").focus(), 100);
+  }
+
+  ghost.addEventListener("click", catchGhost);
+
+  ghost.addEventListener("keydown", event => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      catchGhost();
+    }
+  });
+
+  document.body.appendChild(ghost);
+  ghosts.push(ghost);
+
+  /* Smooth floating movement */
+
+  function moveGhost() {
+    if (session !== gameId || !ghost.isConnected) {
+      return;
+    }
+
+    if (!ghost.classList.contains("caught")) {
+      const w = ghost.offsetWidth || size;
+      const h = ghost.offsetHeight || size;
+
+      x += dx;
+      y += dy;
+
+      if (x <= 0 || x + w >= window.innerWidth) {
+        dx *= -1;
+        ghost.classList.toggle("flipped");
+        x = Math.max(0, Math.min(window.innerWidth - w, x));
+      }
+
+      if (y <= 0 || y + h >= window.innerHeight) {
+        dy *= -1;
+        y = Math.max(0, Math.min(window.innerHeight - h, y));
+      }
+
+      ghost.style.left = x + "px";
+      ghost.style.top = y + "px";
+    }
+
+    requestAnimationFrame(moveGhost);
+  }
+
+  moveGhost();
+}
+
+/* =====================================
+   SAFE TEXT DISPLAY
+===================================== */
+
+function escapeHTML(text) {
+  return String(text).replace(/[&<>"']/g, char => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '"': "&quot;",
+    "'": "&#39;"
+  })[char]);
+}
+
+/* =====================================
+   START GAME
+===================================== */
+
+function startGame() {
+  gameId++;
+
+  ghosts.forEach(ghost => ghost.remove());
+  ghosts = [];
+
+  score = 0;
+  caughtCount = 0;
+mistakes = [];
+$("mistakesReview").innerHTML = "";
+  currentGhost = null;
+  currentQuestion = null;
+  answered = false;
+
+  $("score").textContent = "⭐ Score: 0";
+  $("progress").textContent =
+    `Ghosts caught: 0 / ${questions.length}`;
+
+  $("questionBox").style.display = "none";
+  $("finalMessage").style.display = "none";
+  $("instructions").style.display = "block";
+
+  const session = gameId;
+  const shuffledQuestions = shuffle(questions);
+
+  shuffledQuestions.forEach((question, index) => {
+    createGhost(question, index, session);
+  });
+}
+
+/* =====================================
+   CHECK ANSWER
+===================================== */
+
+function normalizeAnswer(text) {
+  return text
+    .trim()
+    .toLowerCase()
+    .replace(/[’‘]/g, "'")
+    .replace(/\s+/g, " ")
+    .replace(/[.!?]+$/g, "");
+}
+
+function checkAnswer() {
+  if (answered || !currentQuestion) return;
+
+  const userAnswer = normalizeAnswer($("answerInput").value);
+  const correctAnswers = currentQuestion.answers.map(normalizeAnswer);
+  const result = $("result");
+
+  if (!userAnswer) {
+    result.textContent = "Type your answer first! 🔎";
+    result.className = "incorrect";
+    return;
+  }
+
+  answered = true;
+
+  if (correctAnswers.includes(userAnswer)) {
+    result.textContent = "✅ Correct! Great detective work!";
+    result.className = "correct";
+
+    score++;
+    $("score").textContent = `⭐ Score: ${score}`;
+  } else {
+  result.textContent =
+    "❌ Not quite! Try again next time, detective! 🔎";
+
+  result.className = "incorrect";
+
+  mistakes.push({
+    sentence: currentQuestion.sentence,
+    verb: currentQuestion.verb,
+    userAnswer: $("answerInput").value.trim(),
+    hint: currentQuestion.hint ||
+      "Review the grammar rules for this tense."
+  });
+
+
+    // Сохраняем вопрос, ответ ученика и правильный ответ
+    mistakes.push({
+  sentence: currentQuestion.sentence,
+  verb: currentQuestion.verb,
+  userAnswer: $("answerInput").value.trim(),
+  hint: currentQuestion.hint || "Review the grammar rules for this tense."
+});
+  }
+
+  $("answerInput").disabled = true;
+  $("checkBtn").style.display = "none";
+  $("nextBtn").style.display = "inline-block";
+  $("closeBtn").style.display = "none";
+}
+
+/* =====================================
+   NEXT GHOST
+===================================== */
+
+function nextQuestion() {
+  if (!answered) return;
+
+  $("questionBox").style.display = "none";
+
+  if (currentGhost) {
+    currentGhost.remove();
+    currentGhost = null;
+  }
+
+  caughtCount++;
+
+  $("progress").textContent =
+    `Ghosts caught: ${caughtCount} / ${questions.length}`;
+
+  currentQuestion = null;
+  answered = false;
+
+  if (ghosts.every(ghost => !ghost.isConnected)) {
+    finishGame();
+  } else {
+    $("instructions").style.display = "block";
+  }
+}
+
+/* =====================================
+   CLOSE QUESTION
+===================================== */
+
+function closeQuestion() {
+  if (answered) return;
+
+  $("questionBox").style.display = "none";
+
+  if (currentGhost) {
+    currentGhost.classList.remove("caught");
+    currentGhost.style.pointerEvents = "auto";
+    currentGhost = null;
+  }
+
+  currentQuestion = null;
+  $("instructions").style.display = "block";
+}
+
+/* =====================================
+   END GAME
+===================================== */
+
+function finishGame() {
+  $("questionBox").style.display = "none";
+  $("instructions").style.display = "none";
+  $("finalMessage").style.display = "block";
+
+  $("finalScore").textContent =
+    `Your score: ${score} / ${questions.length}`;
+
+  const percentage = score / questions.length;
+  let message;
+
+  if (percentage === 1) {
+    $("finalTitle").textContent = "Mystery solved! 🏆";
+    message = "Amazing! You are the best detective in Mystery Inc.!";
+  } else if (percentage >= 0.75) {
+    $("finalTitle").textContent = "Jinkies! Great job! 🔎";
+    message = "You solved almost every mystery. Well done!";
+  } else if (percentage >= 0.5) {
+    $("finalTitle").textContent = "Good detective work! 👻";
+    message = "Review your mistakes below and try again!";
+  } else {
+    $("finalTitle").textContent = "Ruh-roh! 👀";
+    message = "Review the clues below and solve the mystery again!";
+  }
+
+  $("finalMessageText").textContent = message;
+
+  const review = $("mistakesReview");
+
+  if (mistakes.length === 0) {
+    review.innerHTML =
+      '<div class="no-mistakes">' +
+      '🎉 Perfect! No mistakes. All mysteries solved!' +
+      '</div>';
+    return;
+  }
+
+  review.innerHTML =
+    `<h3>🔎 Let's review your mistakes (${mistakes.length})</h3>`;
+
+  mistakes.forEach((mistake, index) => {
+    const card = document.createElement("div");
+    card.className = "mistake-card";
+
+    const question = document.createElement("div");
+    question.className = "mistake-question";
+    question.textContent =
+      `${index + 1}. ${mistake.sentence} ${mistake.verb}`;
+
+    const yourAnswer = document.createElement("div");
+    yourAnswer.className = "your-answer";
+    yourAnswer.textContent =
+      `❌ Your answer: ${mistake.userAnswer}`;
+
+    const hint = document.createElement("div");
+hint.className = "correct-answer";
+hint.textContent = `💡 Hint: ${mistake.hint}`;
+
+   card.appendChild(question);
+card.appendChild(yourAnswer);
+card.appendChild(hint);
+
+    review.appendChild(card);
+  });
+}
+/* =====================================
+   BUTTONS & KEYBOARD
+===================================== */
+
+$("checkBtn").addEventListener("click", checkAnswer);
+$("nextBtn").addEventListener("click", nextQuestion);
+$("closeBtn").addEventListener("click", closeQuestion);
+
+$("playAgainBtn").addEventListener("click", startGame);
+
+$("answerInput").addEventListener("keydown", event => {
+  if (event.key === "Enter") {
+    if (answered) {
+      nextQuestion();
+    } else {
+      checkAnswer();
+    }
+  }
+
+  if (event.key === "Escape") {
+    closeQuestion();
+  }
+});
+
+/* Keep ghosts within the screen after resizing */
+
+window.addEventListener("resize", () => {
+  ghosts.forEach(ghost => {
+    const maxX = Math.max(0, window.innerWidth - ghost.offsetWidth);
+    const maxY = Math.max(0, window.innerHeight - ghost.offsetHeight);
+
+    const x = parseFloat(ghost.style.left) || 0;
+    const y = parseFloat(ghost.style.top) || 0;
+
+    ghost.style.left = Math.min(x, maxX) + "px";
+    ghost.style.top = Math.min(y, maxY) + "px";
+  });
+});
+
+/* =====================================
+   LAUNCH
+===================================== */
+
+startGame();
+</script>
+let mistakes = [];
+</body>
+</html>
